@@ -6,3 +6,4 @@ tushare
 lxml
 bs4
 scipy
+requests
