@@ -1,5 +1,8 @@
+tabulate
+numpy
 pandas
 plotly
-requests
+tushare
+lxml
+bs4
 scipy
-numpy
