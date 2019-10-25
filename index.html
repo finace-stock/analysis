@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta http-Equiv="Cache-Control" Content="no-cache" />
+    <meta http-Equiv="Pragma" Content="no-cache" />
+    <meta http-Equiv="Expires" Content="0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <title>East Barbaran</title>
+    <style>
+    .sticky {
+       position: fixed;
+       top: 0;
+       z-index: 99999;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/drag-panes.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+    <div class="row">
+      <div id="left" class="col-1">
+        <div id="briefs" class="btn-group-vertical sticky">
+
+        </div>
+    	</div>
+      <div id="maincontainer" class="col-11">
+          <div id="main" class="row"> </div>
+    	</div>
+    </div>
+
+    <script>
+          $(function(){
+            //setInterval(function () {
+
+
+                    $.getJSON('overall.json', function (data) {
+                        $('#briefs').html("");
+                        $('#main').html("");
+                        $.each(data.overall.result, function(i, item) {
+
+                          $('#briefs').append('<a type="button" href="#'+item.name+'"class="btn '+ item.bgcolor+'"> '+ item.cname+" <small>"+item.name+"("+item.buysize+')<small></a>');
+                        });
+                        var count = 0;
+                        $('#main').append('<div class="row">');
+                        for(var pinzhong_id in data.result) {
+
+                                $('#main').append('<div id='+pinzhong_id+' style="height: 650px;" class="col-6">');
+                                $('#main').append('<div id='+pinzhong_id+'_short style="height: 650px;" class="col-6">');
+
+
+
+                                var cn_name = data.result[pinzhong_id].name;
+                                var candle_series = {
+                                                        type: 'candlestick',
+                                                        id: "mainseries",
+                                                        color: 'lightgreen',
+                                                        upColor: 'red',
+                                                        name: pinzhong_id,
+                                                        data: data.result[pinzhong_id].ohlc,
+                                                        dataGrouping: {
+                                                          enabled: false
+                                                        }
+                                                      };
+                                var min_series = {
+                                                      name: 'min',
+                                                      data: data.result[pinzhong_id].min,
+                                                      lineWidth: 0,
+                                                      color: "green",
+                                                      marker: {
+                                                        enabled: true,
+                                                        radius: 6
+                                                      },
+                                                      tooltip: {
+                                                        valueDecimals: 2
+                                                      },
+                                                      states: {
+                                                        hover: {
+                                                          lineWidthPlus: 1
+                                                        }
+                                                      }
+                                                    };
+                                var max_series = {
+                                                      name: 'min',
+                                                      data: data.result[pinzhong_id].max,
+                                                      lineWidth: 0,
+                                                      color: "red",
+                                                      marker: {
+                                                        enabled: true,
+                                                        radius: 6
+                                                      },
+                                                      tooltip: {
+                                                        valueDecimals: 2
+                                                      },
+                                                      states: {
+                                                        hover: {
+                                                          lineWidthPlus: 1
+                                                        }
+                                                      }
+                                                    };
+                                var overall_max_series = {
+                                                      name: 'overall_max',
+                                                      data: data.result[pinzhong_id].overall_max,
+                                                      lineWidth: 0,
+                                                      color: "red",
+                                                      marker: {
+                                                        enabled: true,
+                                                        radius: 10
+                                                      },
+                                                      tooltip: {
+                                                        valueDecimals: 2
+                                                      },
+                                                      states: {
+                                                        hover: {
+                                                          lineWidthPlus: 1
+                                                        }
+                                                      }
+                                                    };
+                                var overall_min_series = {
+                                                      name: 'overall_min',
+                                                      data: data.result[pinzhong_id].overall_min,
+                                                      lineWidth: 0,
+                                                      color: "green",
+                                                      marker: {
+                                                        enabled: true,
+                                                        radius: 10
+                                                      },
+                                                      tooltip: {
+                                                        valueDecimals: 2
+                                                      },
+                                                      states: {
+                                                        hover: {
+                                                          lineWidthPlus: 0
+                                                        }
+                                                      }
+                                                    }
+                                var fitting5_series = {
+                                            name: 'fitting5',
+                                            data: data.result[pinzhong_id].fitting5,
+                                            color: "purple",
+                                            tooltip: {
+                                              valueDecimals: 2
+                                            }
+                                          }
+                                var fitting4_series = {
+                                            name: 'fitting5',
+                                            data: data.result[pinzhong_id].fitting4,
+                                            color:"green",
+                                            tooltip: {
+                                              valueDecimals: 2
+                                            }
+                                          }
+                                var fitting2_series = {
+                                            name: 'fitting5',
+                                            data: data.result[pinzhong_id].fitting2,
+                                            color:"green",
+                                            tooltip: {
+                                              valueDecimals: 2
+                                            }
+                                          }
+                                var upperline_series = {
+                                            name: 'upper',
+                                            data: data.result[pinzhong_id].upperline,
+                                            color:"blue",
+                                            tooltip: {
+                                              valueDecimals: 2
+                                            }
+                                          }
+                                var downline_series = {
+                                            name: 'down',
+                                            data: data.result[pinzhong_id].downline,
+                                            color:"blue",
+                                            tooltip: {
+                                              valueDecimals: 2
+                                            }
+                                          }
+                                // create the chart
+                                lastprice =  data.result[pinzhong_id].ohlc[data.result[pinzhong_id].ohlc.length-1][4]
+                                predict_rate_long = data.predict[pinzhong_id]["long"]
+                                predict_rate_short = data.predict[pinzhong_id]["short"]
+                                predict_rate_long_str = '<span style="color:darkgreen"> ---> '+ predict_rate_long +'</span>'
+                                if(predict_rate_long > lastprice){
+                                  predict_rate_long_str = '<span style="color:red"> ---> '+ predict_rate_long +'</span>'
+                                }
+                                predict_rate_short_str = '<span style="color:darkgreen"> ---> '+ predict_rate_short +'</span>'
+                                if(predict_rate_short > lastprice){
+                                  predict_rate_short_str = '<span style="color:red"> ---> '+ predict_rate_short +'</span>'
+                                }
+
+
+                                title_text = cn_name + " "+pinzhong_id + "<br><b>" + lastprice + "</b>" + predict_rate_long_str
+
+                                Highcharts.stockChart(pinzhong_id, {
+                                        rangeSelector: {
+                                          selected: 4,
+                                          inputEnabled: false,
+                                          buttonTheme: {
+                                              visibility: 'hidden'
+                                          },
+                                          labelStyle: {
+                                              visibility: 'hidden'
+                                          }
+                                        },
+
+                                        title: {
+                                          text: title_text
+                                        },
+                                        /*
+                                        xAxis: {
+                                          ordinal: false,
+
+                                          min: data.result[pinzhong_id].ohlc[ Math.max(data.result[pinzhong_id].ohlc.length-100, 0)][0],
+                                          max: data.result[pinzhong_id].ohlc[data.result[pinzhong_id].ohlc.length-1][0]
+                                        },
+                                        */
+                                        xAxis: {
+                                              min: Date.UTC(2019, 8, 1),
+                                              max: Date.UTC(2019, 9, 1)
+                                          },
+
+                                        tooltip: {
+                                          split: true
+                                        },
+                                        navigator: {
+                                          enabled: true
+                                        },
+                                        series: [candle_series,
+                                                 min_series,
+                                                 max_series,
+                                                 overall_max_series,
+                                                 overall_min_series,
+                                                 fitting5_series,
+                                                 fitting4_series,
+                                                 fitting2_series,
+                                                 upperline_series,
+                                                 downline_series
+
+                                                ]
+                                    });
+
+
+
+
+                                var cn_name = data.result_short[pinzhong_id].name;
+
+                                var candle_series_short = {
+                                                        type: 'candlestick',
+                                                        id: "mainseries",
+                                                        color: 'lightgreen',
+                                                        upColor: 'red',
+                                                        name: pinzhong_id,
+                                                        data: data.result_short[pinzhong_id].ohlc,
+                                                        dataGrouping: {
+                                                          enabled: false
+                                                        }
+                                                      };
+                                var min_series_short = {
+                                                      name: 'min',
+                                                      data: data.result_short[pinzhong_id].min,
+                                                      lineWidth: 0,
+                                                      color: "green",
+                                                      marker: {
+                                                        enabled: true,
+                                                        radius: 6
+                                                      },
+                                                      tooltip: {
+                                                        valueDecimals: 2
+                                                      },
+                                                      states: {
+                                                        hover: {
+                                                          lineWidthPlus: 1
+                                                        }
+                                                      }
+                                                    };
+                                var max_series_short = {
+                                                      name: 'min',
+                                                      data: data.result_short[pinzhong_id].max,
+                                                      lineWidth: 0,
+                                                      color: "red",
+                                                      marker: {
+                                                        enabled: true,
+                                                        radius: 6
+                                                      },
+                                                      tooltip: {
+                                                        valueDecimals: 2
+                                                      },
+                                                      states: {
+                                                        hover: {
+                                                          lineWidthPlus: 1
+                                                        }
+                                                      }
+                                                    };
+                                var overall_max_series_short = {
+                                                      name: 'overall_max',
+                                                      data: data.result_short[pinzhong_id].overall_max,
+                                                      lineWidth: 0,
+                                                      color: "red",
+                                                      marker: {
+                                                        enabled: true,
+                                                        radius: 10
+                                                      },
+                                                      tooltip: {
+                                                        valueDecimals: 2
+                                                      },
+                                                      states: {
+                                                        hover: {
+                                                          lineWidthPlus: 1
+                                                        }
+                                                      }
+                                                    };
+                                var overall_min_series_short = {
+                                                      name: 'overall_min',
+                                                      data: data.result_short[pinzhong_id].overall_min,
+                                                      lineWidth: 0,
+                                                      color: "green",
+                                                      marker: {
+                                                        enabled: true,
+                                                        radius: 10
+                                                      },
+                                                      tooltip: {
+                                                        valueDecimals: 2
+                                                      },
+                                                      states: {
+                                                        hover: {
+                                                          lineWidthPlus: 0
+                                                        }
+                                                      }
+                                                    }
+                                var fitting5_series_short = {
+                                            name: 'fitting5',
+                                            data: data.result_short[pinzhong_id].fitting5,
+                                            color: "purple",
+                                            tooltip: {
+                                              valueDecimals: 2
+                                            }
+                                          }
+                                var fitting4_series_short = {
+                                            name: 'fitting5',
+                                            data: data.result_short[pinzhong_id].fitting4,
+                                            color:"green",
+                                            tooltip: {
+                                              valueDecimals: 2
+                                            }
+                                          }
+                                var fitting2_series_short = {
+                                            name: 'fitting5',
+                                            data: data.result_short[pinzhong_id].fitting2,
+                                            color:"green",
+                                            tooltip: {
+                                              valueDecimals: 2
+                                            }
+                                          }
+                                var upperline_series_short = {
+                                            name: 'upper',
+                                            data: data.result_short[pinzhong_id].upperline,
+                                            color:"blue",
+                                            tooltip: {
+                                              valueDecimals: 2
+                                            }
+                                          }
+                                var downline_series_short = {
+                                            name: 'down',
+                                            data: data.result_short[pinzhong_id].downline,
+                                            color:"blue",
+                                            tooltip: {
+                                              valueDecimals: 2
+                                            }
+                                          }
+
+                                title_text = cn_name + " "+pinzhong_id + "<br><b>" + lastprice + "</b>" + predict_rate_short_str
+                                // create the chart
+                                Highcharts.stockChart(pinzhong_id+"_short", {
+                                        rangeSelector: {
+                                          selected: 4,
+                                          inputEnabled: false,
+                                          buttonTheme: {
+                                              visibility: 'hidden'
+                                          },
+                                          labelStyle: {
+                                              visibility: 'hidden'
+                                          }
+                                        },
+
+                                        title: {
+                                          text: title_text
+                                        },
+                                        yAxis: [{
+                                          labels: {
+                                            align: 'right',
+                                            x: -3
+                                          },
+                                          title: {
+                                            text: 'OHLC'
+                                          },
+                                          height: '100%',
+                                          lineWidth: 0,
+                                          resize: {
+                                            enabled: true
+                                          }
+                                        }],
+
+                                        tooltip: {
+                                          split: true
+                                        },
+                                        navigator: {
+                                          enabled: true,
+                                          xAxis: [{
+                                            min: data.result_short[pinzhong_id].ohlc[ Math.max(data.result_short[pinzhong_id].ohlc.length-100, 0)][0],
+                                            max: data.result_short[pinzhong_id].ohlc[data.result_short[pinzhong_id].ohlc.length-1][0]
+                                          }]
+                                        },
+                                        series: [candle_series_short,
+                                                 min_series_short,
+                                                 max_series_short,
+                                                 overall_max_series_short,
+                                                 overall_min_series_short,
+                                                 fitting5_series_short,
+                                                 fitting4_series_short,
+                                                 fitting2_series_short,
+                                                 upperline_series_short,
+                                                 downline_series_short
+
+                                                ]
+                                    });
+
+
+
+
+                        }
+                      });
+            //  }, 300000);
+          });
+    </script>
+</body>
