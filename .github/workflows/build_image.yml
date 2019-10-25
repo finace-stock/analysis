@@ -1,0 +1,16 @@
+name: Build Image
+
+on:
+  push:
+    branchs:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Build Image
+        run: |
+          docker build -t hightall/stock-analysis .
