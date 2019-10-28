@@ -168,15 +168,19 @@ class SecondOrder(Algorithm):
 
     def _index_p2curv(self, df, start_index, depth=4):
         result_array = []
+        predict_rate = 0.0
         y = df["close"].astype(np.float)[start_index:]
         date_array = df["date"].astype(np.float)[start_index:]
         x = list(range(0, len(y)))
-        z = np.polyfit(x, y, depth)
-        p = np.poly1d(z)
-        for x_value in x:
-            result_y = p(x_value)
-            result_array.append([date_array[start_index + x_value], result_y])
-        predict_rate = round(p(max(x) + 10) * 100 / y.tolist()[-1] - 100, 2)
+        try:
+            z = np.polyfit(x, y, depth)
+            p = np.poly1d(z)
+            for x_value in x:
+                result_y = p(x_value)
+                result_array.append([date_array[start_index + x_value], result_y])
+            predict_rate = round(p(max(x) + 10) * 100 / y.tolist()[-1] - 100, 2)
+        except Exception:
+            pass
         return result_array, predict_rate
 
     def _get_updown_start_index(self, response_array, min_indexes, max_indexes):
@@ -206,6 +210,7 @@ class SecondOrder(Algorithm):
 
     def _get_line_from_point_list(self, response_array, start_index, point_list):
         # point_list = get_line_list(response_array, start_index, point_list)
+        result_slope = 0.0
         result_list = []
         x = []
         y = []
@@ -217,16 +222,19 @@ class SecondOrder(Algorithm):
         if len(x) == 1:
             x.append(x[0] + 1)
             y.append(y[0])
-        z = np.polyfit(x, y, 1)
+        # TODO: need figure out reason for crash of np.polyfit
+        try:
+            z = np.polyfit(x, y, 1)
 
-        p = np.poly1d(z)
-        x = np.array(range(start_index, len(response_array)))
-        for idx in x:
-            result_list.append([response_array[idx][0], p(idx)])
-
-        result_slope = (
-            round((result_list[-1][1] - result_list[-2][1]) * 1000 / result_list[-1][1]) / 10
-        )
+            p = np.poly1d(z)
+            x = np.array(range(start_index, len(response_array)))
+            for idx in x:
+                result_list.append([response_array[idx][0], p(idx)])
+            result_slope = (
+                round((result_list[-1][1] - result_list[-2][1]) * 1000 / result_list[-1][1]) / 10
+            )
+        except Exception:
+            logger.error("x or y len is 0, x %s y %s", x, y)
 
         return result_slope, result_list
 
@@ -266,10 +274,10 @@ class SecondOrder(Algorithm):
         df = pd.DataFrame(response_array, columns=["date", "open", "high", "low", "close"])
         fitting_series, predict_rate = self._index_p2curv(df, start_idx, depth)
         # updown_rate = round((fitting_series[-1][1] - fitting_series[-min(40, len(fitting_series))][1])*1000/fitting_series[-1][1])/10
-        updown_rate = (
-            round((fitting_series[-1][1] - fitting_series[-2][1]) * 1000000 / fitting_series[-1][1])
-            / 10
-        )
+        # updown_rate = (
+        #     round((fitting_series[-1][1] - fitting_series[-2][1]) * 1000000 / fitting_series[-1][1])
+        #     / 10
+        # )
 
         self._analyze_result[self._get_output_idx(time_scale)][
             "fitting" + str(depth)
