@@ -8,7 +8,7 @@ from algorithm import SecondOrder
 import logging
 
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO, format="%(asctime)s - %(name)s %(lineno)d - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -40,16 +40,19 @@ if __name__ == "__main__":
         ["{}{}".format(stock[0].split(".")[-1].lower(), stock[1]), stock[2], stock[4]]
         for stock in data
     ]
-    # code_list = code_list[:100]
+    # code_list = code_list[2700:]
 
     analyze_data = {}
+    i = 0
     for code in code_list:
+        logger.info("analyze index %s", i)
         second_order_algorithm = SecondOrder(symbol=code[0], name=code[1], industry=code[2])
         second_order_algorithm.analyze()
         analyze_data[code[0]] = {
             "overall": second_order_algorithm.result["overall"],
             "predict": second_order_algorithm.result["predict"],
         }
+        i += 1
 
     with open("result.json", "w") as result_json:
         json.dump(analyze_data, result_json)
