@@ -318,15 +318,19 @@ class SecondOrder(Algorithm):
         return response_array
 
     def _get_stock_ohlc(self, symbol, time_scale):
-        qh_url = STOCK_QUERY_URL.format(symbol=symbol, scale=time_scale, len=200)
-        r = requests.get(qh_url)
-        logger.debug("stock query url %s", qh_url)
-        response_string = r.text
-        response_code = r.status_code
-        if response_code != 200:
-            print("remote server responses wrongly")
+        stock_info_url = STOCK_QUERY_URL.format(symbol=symbol, scale=time_scale, len=200)
+        try:
+            r = requests.get(stock_info_url)
+            logger.debug("stock query url %s", stock_info_url)
+            response_string = r.text
+            response_code = r.status_code
+            raw_array = json.loads(response_string)
+            if response_code != 200:
+                logger.error("remote server responses wrongly")
+                return
+        except Exception:
+            logger.error("remote server responses wrongly")
             return
-        raw_array = json.loads(response_string)
         response_array = []
         for raw_item in raw_array:
             tmp_item = [
