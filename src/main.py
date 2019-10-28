@@ -40,26 +40,16 @@ if __name__ == "__main__":
         ["{}{}".format(stock[0].split(".")[-1].lower(), stock[1]), stock[2], stock[4]]
         for stock in data
     ]
-    code_list = code_list[:10]
+    # code_list = code_list[:100]
 
+    analyze_data = {}
     for code in code_list:
         second_order_algorithm = SecondOrder(symbol=code[0], name=code[1], industry=code[2])
-        analyze_result = second_order_algorithm.analyze()
-        logger.info("Analyze result: %s", analyze_result)
-    # code_list = [
-    #     ["sh600000", "浦发银行"],
-    #     ["sh510050", "50ETF"],
-    #     ["m2001", "豆粕2001"],
-    #     ["c2001", "玉米2001"],
-    # ]
-    #
-    # while True:
-    # overall_data_json = {"result": {}, "result_short": {}, "overall": {"result": []}, "predict": {}}
-    # for code in code_list:
-    #     generate_one(code[0])
-    # result_json_filename = file_base_dir + "overall.json"
-    # overall_data_json["overall"]["result"].sort(key=lambda x: abs(x["score"]), reverse=True)
-    # with open(result_json_filename, "w") as fp:
-    #     json.dump(overall_data_json, fp)
-    # print(datetime.datetime.now())
-    #    time.sleep(300)
+        second_order_algorithm.analyze()
+        analyze_data[code[0]] = {
+            "overall": second_order_algorithm.result["overall"],
+            "predict": second_order_algorithm.result["predict"],
+        }
+
+    with open("result.json", "w") as result_json:
+        json.dump(analyze_data, result_json)
