@@ -36,12 +36,22 @@ overall_data_json = {"result": {}, "result_short": {}, "overall": {"result": []}
 
 
 class SecondOrder(Algorithm):
-    def __init__(self, symbol=None, name=None, industry=None, target_type=BuyType.Stock.value):
+    def __init__(
+        self,
+        symbol=None,
+        name=None,
+        industry=None,
+        collect_detail=True,
+        target_type=BuyType.Stock.value,
+    ):
         self._id = symbol
         self._name = name
         self._industry = industry
         self._type = target_type
-        self._analyze_result = {"result": {}, "result_short": {}, "overall": {}, "predict": {}}
+        self._analyze_result = {}
+        self._collect_detail = collect_detail
+        if collect_detail:
+            self._analyze_result.update({"result": {}, "result_short": {}})
 
     @property
     def result(self):
@@ -138,20 +148,22 @@ class SecondOrder(Algorithm):
         min_list, max_list = self._get_extreme_points(response_array, 20)
 
         result_idx_name = self._get_output_idx(time_scale)
-        self._analyze_result[result_idx_name]["min"] = self._get_value_list_from_indexes(
-            response_array, min_list
-        )
-        self._analyze_result[result_idx_name]["max"] = self._get_value_list_from_indexes(
-            response_array, max_list
-        )
 
         overall_min_list, overall_max_list = self._get_extreme_points(response_array, 60)
-        self._analyze_result[result_idx_name]["overall_min"] = self._get_value_list_from_indexes(
-            response_array, overall_min_list
-        )
-        self._analyze_result[result_idx_name]["overall_max"] = self._get_value_list_from_indexes(
-            response_array, overall_max_list
-        )
+
+        if self._collect_detail:
+            self._analyze_result[result_idx_name]["min"] = self._get_value_list_from_indexes(
+                response_array, min_list
+            )
+            self._analyze_result[result_idx_name]["max"] = self._get_value_list_from_indexes(
+                response_array, max_list
+            )
+            self._analyze_result[result_idx_name][
+                "overall_min"
+            ] = self._get_value_list_from_indexes(response_array, overall_min_list)
+            self._analyze_result[result_idx_name][
+                "overall_max"
+            ] = self._get_value_list_from_indexes(response_array, overall_max_list)
 
         return min_list, max_list, overall_min_list, overall_max_list
 
@@ -261,8 +273,9 @@ class SecondOrder(Algorithm):
         )
 
         result_idx_name = self._get_output_idx(time_scale)
-        self._analyze_result[result_idx_name]["upperline"] = max_line_series
-        self._analyze_result[result_idx_name]["downline"] = min_line_series
+        if self._collect_detail:
+            self._analyze_result[result_idx_name]["upperline"] = max_line_series
+            self._analyze_result[result_idx_name]["downline"] = min_line_series
         return max_line_slope, max_line_series, min_line_slope, min_line_series
 
     def _get_poly_fitting_series(
@@ -279,9 +292,10 @@ class SecondOrder(Algorithm):
         #     / 10
         # )
 
-        self._analyze_result[self._get_output_idx(time_scale)][
-            "fitting" + str(depth)
-        ] = fitting_series
+        if self._collect_detail:
+            self._analyze_result[self._get_output_idx(time_scale)][
+                "fitting" + str(depth)
+            ] = fitting_series
         return predict_rate, fitting_series
 
     def _get_qihuo_ohlc(self, symbol, time_scale=240):
@@ -367,8 +381,9 @@ class SecondOrder(Algorithm):
 
         result_idx_name = self._get_output_idx(time_scale)
 
-        self._analyze_result[result_idx_name]["ohlc"] = result_json
-        self._analyze_result[result_idx_name]["name"] = self._name
+        if self._collect_detail:
+            self._analyze_result[result_idx_name]["ohlc"] = result_json
+            self._analyze_result[result_idx_name]["name"] = self._name
 
         return result_json
 
@@ -422,15 +437,19 @@ class SecondOrder(Algorithm):
         score = score + abs(predict_long_5 / 10 + predict_short_5 / 10)
 
         # can_buy_size = get_contract_size(self._id, short_last_price)
-        self._analyze_result["overall"] = {
-            "name": self._id,
-            "cname": self._name,
-            "score": score,
-            # "buysize": can_buy_size,
-            "bgcolor": bgcolor,
-            "price": short_last_price,
-        }
-        self._analyze_result["predict"] = {
-            "long": round(long_last_price * (predict_long_5 / 100 + 1), 3),
-            "short": round(short_last_price * (predict_short_5 / 100 + 1), 3),
-        }
+        long_predict = round(long_last_price * (predict_long_5 / 100 + 1), 3)
+        short_predict = round(short_last_price * (predict_short_5 / 100 + 1), 3)
+        self._analyze_result.update(
+            {
+                "id": self._id,
+                "name": self._name,
+                "score": score,
+                "price": short_last_price,
+                "properties": {"bgcolor": bgcolor},
+                "gain": {
+                    "long": round(long_predict - short_last_price, 3),
+                    "short": round(short_predict - short_last_price, 3),
+                },
+                "predict": {"long": long_predict, "short": short_predict},
+            }
+        )
