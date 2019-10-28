@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import concurrent.futures
 import json
 
 from tushare_info import StockInfo
@@ -13,6 +14,21 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 ts_token = "180785c0bbc0efcfbecccc82e1fb2deaed9ed7e3a5149368374bc02c"
+analyze_data = {}
+
+
+def analyze_item(code):
+    global analyze_data
+
+    # for code in item:
+    second_order_algorithm = SecondOrder(symbol=code[0], name=code[1], industry=code[2])
+    second_order_algorithm.analyze()
+    analyze_data[code[0]] = {
+        "overall": second_order_algorithm.result["overall"],
+        "predict": second_order_algorithm.result["predict"],
+    }
+
+    return code
 
 
 if __name__ == "__main__":
@@ -40,19 +56,12 @@ if __name__ == "__main__":
         ["{}{}".format(stock[0].split(".")[-1].lower(), stock[1]), stock[2], stock[4]]
         for stock in data
     ]
-    # code_list = code_list[2700:]
+    code_list = code_list[:200]
 
-    analyze_data = {}
-    i = 0
-    for code in code_list:
-        logger.info("analyze index %s", i)
-        second_order_algorithm = SecondOrder(symbol=code[0], name=code[1], industry=code[2])
-        second_order_algorithm.analyze()
-        analyze_data[code[0]] = {
-            "overall": second_order_algorithm.result["overall"],
-            "predict": second_order_algorithm.result["predict"],
-        }
-        i += 1
+    with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
+        futures = [executor.submit(analyze_item, item) for item in code_list]
+        for future in concurrent.futures.as_completed(futures):
+            logger.info(future.result())
 
     with open("result.json", "w") as result_json:
         json.dump(analyze_data, result_json)
