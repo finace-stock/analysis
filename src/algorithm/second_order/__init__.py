@@ -415,7 +415,7 @@ class SecondOrder(Algorithm):
         return predict_rate, overall_slope, last_price
 
     def analyze(self):
-        logger.info("analyze stock %s", self._id)
+        logger.debug("analyze stock %s", self._id)
 
         predict_short_5, short_overall_slope, short_last_price = self._generate_one_piece(
             self._id, 60, 2, False
@@ -423,7 +423,9 @@ class SecondOrder(Algorithm):
         predict_long_5, long_overall_slope, long_last_price = self._generate_one_piece(
             self._id, 240, 2, False
         )
-        logger.info("%s: predict long_5 %s short_5 %s", self._name, predict_long_5, predict_short_5)
+        logger.debug(
+            "%s: predict long_5 %s short_5 %s", self._name, predict_long_5, predict_short_5
+        )
 
         score = 0
         bgcolor = "btn-warning"
@@ -439,6 +441,9 @@ class SecondOrder(Algorithm):
         # can_buy_size = get_contract_size(self._id, short_last_price)
         long_predict = round(long_last_price * (predict_long_5 / 100 + 1), 3)
         short_predict = round(short_last_price * (predict_short_5 / 100 + 1), 3)
+        gain_long = round(round(long_predict - short_last_price, 2) / short_last_price, 2) * 100
+        gain_short = round(round(short_predict - short_last_price, 2) / short_last_price, 2) * 100
+        gain_average = (gain_long + gain_short) / 2
         self._analyze_result.update(
             {
                 "id": self._id,
@@ -446,10 +451,7 @@ class SecondOrder(Algorithm):
                 "score": score,
                 "price": short_last_price,
                 "properties": {"bgcolor": bgcolor},
-                "gain": {
-                    "long": round(long_predict - short_last_price, 3),
-                    "short": round(short_predict - short_last_price, 3),
-                },
+                "gain": {"long": gain_long, "short": gain_short, "average": gain_average},
                 "predict": {"long": long_predict, "short": short_predict},
             }
         )

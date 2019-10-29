@@ -3,6 +3,7 @@
 
 import concurrent.futures
 import json
+import pandas as pd
 
 from tushare_info import StockInfo
 from algorithm import SecondOrder
@@ -57,10 +58,15 @@ if __name__ == "__main__":
     ]
     # code_list = code_list[:10]
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=400) as executor:
         futures = [executor.submit(analyze_item, item) for item in code_list]
         for future in concurrent.futures.as_completed(futures):
-            logger.info(future.result())
+            pass
 
-    with open("result.json", "w") as result_json:
-        json.dump(analyze_data, result_json)
+    df = pd.DataFrame(analyze_data)
+    df = df.join(pd.DataFrame(df["gain"].to_dict()).T)
+    df = df.sort_values(["long", "short"], ascending=[False, False])
+    df = df[df["long"] < 100]
+    logger.info(df.head(10))
+    # with open("result.json", "w") as result_json:
+    #     json.dump(analyze_data, result_json)
