@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
+from faunadb import query as q
+from faunadb.client import FaunaClient
 import concurrent.futures
 import json
 import pandas as pd
@@ -17,13 +20,16 @@ logger = logging.getLogger(__name__)
 ts_token = "180785c0bbc0efcfbecccc82e1fb2deaed9ed7e3a5149368374bc02c"
 analyze_data = []
 
+DB_SECRET = os.getenv("DB_SECRET")
+server_client = FaunaClient(secret=DB_SECRET)
+
 
 def analyze_item(code):
     global analyze_data
 
     # for code in item:
     second_order_algorithm = SecondOrder(
-        symbol=code[0], name=code[1], industry=code[2], collect_detail=False
+        symbol=code[0], name=code[1], industry=code[2], collect_detail=True
     )
     second_order_algorithm.analyze()
     analyze_data.append(second_order_algorithm.result)
@@ -56,7 +62,7 @@ if __name__ == "__main__":
         ["{}{}".format(stock[0].split(".")[-1].lower(), stock[1]), stock[2], stock[4]]
         for stock in data
     ]
-    # code_list = code_list[:10]
+    # code_list = code_list[:100]
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=400) as executor:
         futures = [executor.submit(analyze_item, item) for item in code_list]
@@ -67,6 +73,9 @@ if __name__ == "__main__":
     df = df.join(pd.DataFrame(df["gain"].to_dict()).T)
     df = df.sort_values(["long", "short"], ascending=[False, False])
     df = df[df["long"] < 100]
-    logger.info(df.head(10))
+
+    top_10 = df.head(10).values.tolist()
+
+    ret = server_client.query(q.create(q.collection("analyze"), {"data": {"result": top_10}}))
     # with open("result.json", "w") as result_json:
     #     json.dump(analyze_data, result_json)

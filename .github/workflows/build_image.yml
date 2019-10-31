@@ -12,5 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Build Image
+        env:
+          DB_SECRET: ${{ secrets.DB_SECRET }}
         run: |
           docker build -t hightall/stock-analysis .
