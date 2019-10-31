@@ -15,4 +15,4 @@ jobs:
         env:
           DB_SECRET: ${{ secrets.DB_SECRET }}
         run: |
-          docker build -t hightall/stock-analysis .
+          docker build --build-arg DB_SECRET=${DB_SECRET} -t hightall/stock-analysis .
