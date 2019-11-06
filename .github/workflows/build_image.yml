@@ -1,8 +1,11 @@
 name: Build Image
 
 on:
-  schedule:
-    - cron: "0 7 * * 1-5"
+  push:
+    branches:
+      - master
+#  schedule:
+#    - cron: "0 7 * * 1-5"
 
 jobs:
   build:
