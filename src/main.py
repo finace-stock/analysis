@@ -71,7 +71,7 @@ if __name__ == "__main__":
 
     df = pd.DataFrame(analyze_data)
     df = df.join(pd.DataFrame(df["gain"].to_dict()).T)
-    index_names = df[(df["long"] < 0) & (df["short"] < 0)].index
+    index_names = df[(df["long"] < 0) | (df["short"] < 0)].index
     df.drop(index_names, inplace=True)
     df = df.sort_values(["score"], ascending=[False])
 
