@@ -427,22 +427,23 @@ class SecondOrder(Algorithm):
             "%s: predict long_5 %s short_5 %s", self._name, predict_long_5, predict_short_5
         )
 
-        score = 0
+        # score = 0
         bgcolor = "btn-warning"
         # if long_overall_slope > 0 and short_5 > 0 :
         if predict_long_5 > 0 and predict_short_5 > 0:
             bgcolor = "btn-danger"
-            score = 100
+            # score = 100
         if predict_long_5 < 0 and predict_short_5 < 0:
             bgcolor = "btn-success"
-            score = 100
-        score = score + abs(predict_long_5 / 10 + predict_short_5 / 10)
+            # score = 100
+        # score = score + abs(predict_long_5 / 10 + predict_short_5 / 10)
 
         # can_buy_size = get_contract_size(self._id, short_last_price)
         long_predict = round(long_last_price * (predict_long_5 / 100 + 1), 3)
         short_predict = round(short_last_price * (predict_short_5 / 100 + 1), 3)
         gain_long = round(round(long_predict - short_last_price, 2) / short_last_price, 2) * 100
         gain_short = round(round(short_predict - short_last_price, 2) / short_last_price, 2) * 100
+        score = math.sqrt((math.pow(gain_long, 2) + math.pow(gain_short, 2)) / 2)
         gain_average = (gain_long + gain_short) / 2
         self._analyze_result.update(
             {

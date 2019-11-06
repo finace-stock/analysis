@@ -71,8 +71,9 @@ if __name__ == "__main__":
 
     df = pd.DataFrame(analyze_data)
     df = df.join(pd.DataFrame(df["gain"].to_dict()).T)
-    df = df.sort_values(["long", "short"], ascending=[False, False])
-    df = df[df["long"] < 100]
+    index_names = df[(df["long"] < 0) & (df["short"] < 0)].index
+    df.drop(index_names, inplace=True)
+    df = df.sort_values(["score"], ascending=[False])
 
     top_10 = df.head(10).values.tolist()
 
