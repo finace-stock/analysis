@@ -64,7 +64,7 @@ if __name__ == "__main__":
     ]
     # code_list = code_list[:100]
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=400) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=500) as executor:
         futures = [executor.submit(analyze_item, item) for item in code_list]
         for future in concurrent.futures.as_completed(futures):
             pass
